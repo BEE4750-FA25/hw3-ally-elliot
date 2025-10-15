@@ -85,3 +85,40 @@ plot!(p, x_all, N_all, label="NBOD", color=:blue, linestyle=:dot)
 plot!(p, x_all, fill(Cs, length(x_all)), label="DO Saturation", color=:purple, linestyle=:dashdot)
 hline!([3], color=:red, label="Regulatory Limit", linewidth=2)
 scatter!([x_min], [C_min], label="Minimum DO", color=:red, markersize=6)
+
+
+## Question 1.2 Numerically integrated model
+
+##from dissolved oxygen class slides
+
+function do_numerical(L, Δx, C0, B0, N0, ka, kn, kc, Cs, U)
+    n = Int(L / Δx) # number of length steps
+    C = zeros(n + 1)
+    B = zeros(n + 1)
+    N = zeros(n + 1)
+    C[1] = C0
+    B[1] = B0
+    N[1] = N0
+    for i = 1:n
+        B[i+1] = B[i] * exp(-kc * Δx / U)
+        N[i+1] = N[i] * exp(-kn * Δx / U)
+        C[i+1] = C[i] + (Δx / U) * (ka * (Cs - C[i]) - kc * B[i] - kn * N[i])
+    end
+    return (C, B, N)
+end
+#first inflow
+L1 = 15
+dx = 0.5
+C1, B1, N1 = do_numerical(L1, dx, C01, B01, N01, ka, kc, kn, Cs, U)
+
+# Combine with second inflow
+C02 = (Q1* C1[end] + Qw2*Cw2) / Q2
+B02 = (Q1* B1[end] + Qw2*Bw2) / Q2
+N02 = (Q1* N1[end] + Qw2*Nw2) / Q2
+L2 = 35
+#run simulation for 35 km (post second inflow)
+C2, B2, N2 = do_numerical(L2, dx, C02, B02, N02, ka, kc, kn, Cs, U)
+
+#combine the first 15 km with second 35 km
+combined = [C1;C2]
+
