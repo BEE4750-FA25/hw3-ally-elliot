@@ -119,6 +119,18 @@ L2 = 35
 #run simulation for 35 km (post second inflow)
 C2, B2, N2 = do_numerical(L2, dx, C02, B02, N02, ka, kc, kn, Cs, U)
 
+#remove overlapping value at 15 km
+C2 = C2[3:end]
 #combine the first 15 km with second 35 km
 combined = [C1;C2]
 
+CL = length(combined)
+
+
+#plot!(p, 0:2:CL, combined, color=:blue, linewidth=3, linestyle=:dash, label="Numerical (Δx = .5km)")
+
+# find minimum DO and where it occurs
+C_min_num = minimum(combined)
+idx_min_num = argmin(combined) /2
+println(C_min_num)
+println(idx_min_num)
